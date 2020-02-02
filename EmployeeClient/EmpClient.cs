@@ -55,36 +55,6 @@ namespace EmployeeClient
                                       .Select(getEmailDetails).ToList();
 
                                 send.sendEmails(empDet);
-
-                                //here(isEmployeeOccassion)
-                                //elect(getEmailDetails);
-
-                                /*
-                                 
-                                 
-                                foreach (var emp in empList)
-                                {// Birth Date && employmentEndDate is null = They are still employed
-                                    if (emp.dateOfBirth == "1955-10-28T00:00:00" // DateTime.Now.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")
-                                        && emp.employmentEndDate == null)
-                                    {
-                                        //email = emp.name + emp.lastname + "@acme.com"; // assuming that this is the email format
-                                        email = EmailCreator.Create(emp.name, emp.lastname);
-                                        fullName = emp.name + ' ' + emp.lastname;
-                                        msg = "Happy Birthday";
-                                        empDet.Add(new Tuple<string, string, string>(fullName, email, msg));
-                                    }
-                                    // employmentStartDate && employmentEndDate is null = They are employed and have a work anniversary
-                                    if (emp.employmentStartDate == DateTime.Now.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")
-                                        && emp.employmentEndDate == null)
-                                    {
-                                        //email = emp.name + emp.lastname + "@acme.com";
-                                        email = EmailCreator.Create(emp.name, emp.lastname);
-                                        fullName = emp.name + ' ' + emp.lastname;
-                                        msg = "Happy Anniversary";
-                                        empDet.Add(new Tuple<string, string, string>(fullName, email, msg));
-                                    }
-                                }*/
-
                             } // End of StreamReader
                         }
                     } // End of using ResponseStream
