@@ -1,25 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Mail;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace EmployeeClient
 {
     public partial class emailer
     {
-        public void sendEmail(List<Tuple<string, string, string>> empDet)
+        private static void sendEmail(Tuple<string, string, string> empDet)
         {
             try
             {
                 MailMessage message = new MailMessage();
                 SmtpClient smtp = new SmtpClient();
-                message.From = new MailAddress("send@gmail.com"); // AcmeWellness@Acme.com
-                message.To.Add(new MailAddress("receive@gmail.com")); //(empDet[2].ToString())); // email of employee
+                message.From = new MailAddress("AcmeWellness@Acme.com");
+                message.To.Add(new MailAddress(empDet.Item2.ToString())); // email of employee
                 message.Subject = "Test";
-                message.IsBodyHtml = true; //body has html format
-                message.Body = "birthday/anniversary";  //empDet[3] + " " + empDet[1]; the msg and emplyee fullname. The json does not contain anything happening today
+                message.IsBodyHtml = true;
+                message.Body = empDet.Item3;  //the msg and emplyee fullname.  + " " + empDet.Item1
                 smtp.Port = 587;
                 smtp.Host = "smtp.gmail.com"; //for gmail host  
                 smtp.EnableSsl = true;
@@ -29,6 +26,11 @@ namespace EmployeeClient
                 //smtp.Send(message);
             }
             catch (Exception) { }
+        }
+
+        public void sendEmails(List<Tuple<string, string, string>> empDet)
+        {
+            empDet.ForEach(sendEmail);
         }
     }
 }

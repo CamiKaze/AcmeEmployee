@@ -3,6 +3,7 @@ using System.Net;
 using System.IO;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EmployeeClient
 {
@@ -19,12 +20,9 @@ namespace EmployeeClient
 
         public string makeRequest()
         {
-            string strResponseValue = string.Empty;
-            string email = string.Empty;
-            string fullName = string.Empty;
-            string msg = string.Empty;
             emailer send = new emailer();
-            List<Tuple<string, string, string>> empDet = new List<Tuple<string, string, string>>();
+
+            string strResponseValue = string.Empty;
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(endPoint);
 
@@ -35,45 +33,58 @@ namespace EmployeeClient
                 using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
                 {
                     if (response.StatusCode
-                        != HttpStatusCode.OK) // Check response code
-                    {
+                        != HttpStatusCode.OK)
+                    { // Check response code
                         throw new ApplicationException("Error code: " + response.StatusCode.ToString());
                     }
-
-                    // Process the response stream... (could be JSON, XML, or HTML etc.)
+                    
                     using (Stream responseStream = response.GetResponseStream())
-                    {
+                    {// Process the response stream... (could be JSON, XML, or HTML etc.)
                         if (responseStream != null)
                         {
                             using (StreamReader reader = new StreamReader(responseStream))
                             { // Read the json object
                                 strResponseValue = reader.ReadToEnd();
 
-                                dynamic empList = JsonConvert.DeserializeObject<List<EmployeeDetails>>(strResponseValue);
-                                
-                                // Condition of when an an email is sent
+                                List<EmployeeDetails> employees =
+                                    JsonConvert.DeserializeObject<List<EmployeeDetails>>(strResponseValue);
+
+                                List<Tuple<string, string, string>> empDet =
+                                    employees
+                                      .Where(isEmployeeOccassion)
+                                      .Select(getEmailDetails).ToList();
+
+                                send.sendEmails(empDet);
+
+                                //here(isEmployeeOccassion)
+                                //elect(getEmailDetails);
+
+                                /*
+                                 
+                                 
                                 foreach (var emp in empList)
-                                {// Check Birth Date and if employmentEndDate is null (They are still employed)
-                                    if (emp.dateOfBirth == DateTime.Now.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")
-                                        && emp.employmentEndDate == null) // "1950-12-30T00:00:00" test value
+                                {// Birth Date && employmentEndDate is null = They are still employed
+                                    if (emp.dateOfBirth == "1955-10-28T00:00:00" // DateTime.Now.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")
+                                        && emp.employmentEndDate == null)
                                     {
-                                        email = emp.name + emp.lastname + "@acme.com;"; // assuming that this is the email format
+                                        //email = emp.name + emp.lastname + "@acme.com"; // assuming that this is the email format
+                                        email = EmailCreator.Create(emp.name, emp.lastname);
                                         fullName = emp.name + ' ' + emp.lastname;
                                         msg = "Happy Birthday";
                                         empDet.Add(new Tuple<string, string, string>(fullName, email, msg));
                                     }
-                                    // Check employmentStartDate and if employmentEndDate is null (They are employed and have a work anniversary)
+                                    // employmentStartDate && employmentEndDate is null = They are employed and have a work anniversary
                                     if (emp.employmentStartDate == DateTime.Now.ToString("yyyy'-'MM'-'dd'T'HH':'mm':'ss")
                                         && emp.employmentEndDate == null)
                                     {
-                                        email = emp.name + emp.lastname + "@acme.com;";
+                                        //email = emp.name + emp.lastname + "@acme.com";
+                                        email = EmailCreator.Create(emp.name, emp.lastname);
                                         fullName = emp.name + ' ' + emp.lastname;
                                         msg = "Happy Anniversary";
                                         empDet.Add(new Tuple<string, string, string>(fullName, email, msg));
                                     }
-                                }
-                                send.sendEmail(empDet);
-                                
+                                }*/
+
                             } // End of StreamReader
                         }
                     } // End of using ResponseStream
@@ -84,6 +95,45 @@ namespace EmployeeClient
                 strResponseValue = ex.Message;
             }
             return strResponseValue;
+        }
+
+        private Tuple<string, string, string> getEmailDetails(EmployeeDetails emp)
+        {
+            string email = EmailCreator.Create(emp.name, emp.lastname);
+            string fullName = emp.name + ' ' + emp.lastname;
+            string msg = OccassionMessageCreate(emp);
+            Tuple<string, string, string> emailDet = new Tuple<string, string, string>(fullName, email, msg);
+            return emailDet;
+        }
+
+        private bool isEmployeeOccassion(EmployeeDetails employee)
+        {
+            if (employee.employmentEndDate != null) 
+            {
+                return false;
+            }
+
+            string monthDay = DateTime.Now.ToString("MM'-'dd");
+            string empBirthday = employee.dateOfBirth.Substring(5, 5);
+            string empAnniversary = employee.employmentStartDate.Substring(5, 5);
+
+            return empBirthday.Contains(monthDay) || empAnniversary.Contains(monthDay);
+        }
+
+        public string OccassionMessageCreate(EmployeeDetails employee) 
+        {
+            string monthDay = DateTime.Now.ToString("MM'-'dd");
+            string empBirthday = employee.dateOfBirth.Substring(5, 5);
+            string fullname = employee.name + " " + employee.lastname;
+
+            if (empBirthday.Contains(monthDay)) 
+            {
+                return "Happy Birthday " + fullname; 
+            }
+            else 
+            {
+                return "Happy Anniversary " + fullname;
+            }
         }
     }
 }
