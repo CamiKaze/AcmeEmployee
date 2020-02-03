@@ -5,6 +5,7 @@ A requirement exists at acme to develop a service component that will send birth
 
 # Technologies used
 .NET 4.7.2
+
 C#
 WPF (Windows Presentation Foundation)
 SOLID Principles
