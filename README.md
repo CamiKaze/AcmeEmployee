@@ -7,9 +7,13 @@ A requirement exists at acme to develop a service component that will send birth
 .NET 4.7.2
 
 C#
+
 WPF (Windows Presentation Foundation)
+
 SOLID Principles
+
 Functional Programming
+
 Declarative Programming
 
 # API Server to use
